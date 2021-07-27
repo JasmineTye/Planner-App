@@ -1,0 +1,19 @@
+{
+  "name": "mad_p2036137_p2002145",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JasmineTye/Planner-App.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JasmineTye/Planner-App/issues"
+  },
+  "homepage": "https://github.com/JasmineTye/Planner-App#readme"
+}
