@@ -74,27 +74,39 @@ app.post('/add/task', printDebugInfo, function (req, res) {
      var colorTag = req.body.colorTag;
      var notes = req.body.notes;
 
+     if (
+          title == "" || title == null || date == "" || date == null ||
+          timeFrom == "" || timeFrom == null || timeTo == "" || timeTo == null
+     ) {
+          var output = {
+               "result": "Please fill in all necessary fields!"
+          };
+
+          res.status(422).send(output);
+          return;
+     }
+
+     if (timeFrom >= timeTo) {
+          var output = {
+               "result": "Time From must be before time to"
+          };
+          res.status(422).send(output);
+          return;
+     }
 
      task.addTask(title, date, timeFrom, timeTo, colorTag, notes, function (err, result) {
           if (!err) {
                console.log(result);
                res.status(204).send(result);
+
           }
           else {
-               console.log(result);
-               // if category name already exists
-               if (err.errno == 1062) {
-                    var output = {
-                         "result": "Duplicate entry"
-                    };
-                    res.status(422).send(output);
-               }
-               else {
-                    var output = {
-                         "result": "Internal Server Error"
-                    };
-                    res.status(500).send(output);
-               }
+               console.log(err);
+               var output = {
+                    "result": "Internal Server Error"
+               };
+               res.status(500).send(output);
+
           }
      });
 }
@@ -108,6 +120,26 @@ app.put('/task/:id/', printDebugInfo, function (req, res) {
      var colorTag = req.body.colorTag;
      var notes = req.body.notes;
      var taskID = req.params.id;
+
+     if (
+          title == "" || title == null || date == "" || date == null ||
+          timeFrom == "" || timeFrom == null || timeTo == "" || timeTo == null
+     ) {
+          var output = {
+               "result": "Please fill in all necessary fields!"
+          };
+          
+          res.status(422).send(output);
+          return;
+     }
+
+     if (timeFrom >= timeTo) {
+          var output = {
+               "result": "Time From must be before time to"
+          };
+          res.status(422).send(output);
+          return;
+     }
 
      task.updateTask(title, date, timeFrom, timeTo, colorTag, notes, taskID, function (err, result) {
           if (!err) {
@@ -138,19 +170,19 @@ app.put('/task/:id/', printDebugInfo, function (req, res) {
 });
 
 
-app.get('/task/:date',  function (req, res) {
+app.get('/task/:date', function (req, res) {
      var date = req.params.date;
      task.getTaskByDate(date, function (err, result) {
           if (!err) {
                res.status(200).send(result);
-               
+
           } else {
                res.status(500).send("Internal Server Error");
           }
      });
 });
 
-app.get('/task/time/:date',  function (req, res) {
+app.get('/task/time/:date', function (req, res) {
      var date = req.params.date;
 
      task.getTaskByTime(date, function (err, result) {

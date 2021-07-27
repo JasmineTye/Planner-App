@@ -8,8 +8,8 @@ import { Card } from 'react-native-shadow-cards';
 import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 
-//const hostname = '192.168.1.116';
-const hostname = '172.22.90.176';
+const hostname = '192.168.1.116';
+// const hostname = '172.22.90.176';
 const port = 3000;
 const baseURL = `http://${hostname}:${port}`;
 var data = [];

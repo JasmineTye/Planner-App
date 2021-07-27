@@ -14,31 +14,17 @@ import DATA from './data';
 import DayWeekMonthHeader from '../components/dayWeekMonthHeader';
 import AddButton from '../components/addBtn';
 
-//const hostname = '192.168.1.116';
-// const hostname = '172.22.90.176';
-// const port = 3000;
+// const hostname = '192.168.1.116';
+// // const hostname = '172.22.90.176';
+// const port = process.env.PORT || 4201;
 // const baseURL = `http://${hostname}:${port}`;
+
+const hostname = '192.168.1.116';
+// const hostname = '172.22.90.176';
+const port = 3000;
+const baseURL = `http://${hostname}:${port}`;
 var data = [];
 
-const publicIp = require("public-ip");
-
-const getIP = () => {
-  publicIp.v4()
-  .then((response) => {
-    console.log("Response (TYPE OF): " + typeof(response));
-    console.log("Response: " + response);
-    return response;
-  })
-  .catch((error) => {
-    console.log(error);
-  });
-}
-
-console.log("GetIP() TYPE OF: " + typeof(getIP()));
-console.log("GetIp(): " + getIP());
-
-const port = 3000;
-const baseURL = `http://${getIP()}:${port}`;
 
 const Separator = () => (
   <View style={styles.separator} />

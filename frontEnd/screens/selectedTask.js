@@ -141,6 +141,8 @@ export default class selectedTask extends Component {
         })
         .catch((error) => {
           console.log(error);
+          var errMssg = error.response.data.result;
+          Alert.alert(errMssg);
         });
     }
 
@@ -159,7 +161,7 @@ export default class selectedTask extends Component {
       <ScrollView>
         <View style={{ backgroundColor: '#D484E1' }}>
           <View style={{ backgroundColor: "rgba(255, 255, 255, 0.5)", flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 5 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image
                 source={require('../images/icons8-back-50.png')}
               />

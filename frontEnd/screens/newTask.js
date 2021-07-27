@@ -17,8 +17,8 @@ import ColorPalette from 'react-native-color-palette';
 import CustomHeader from '../components/customHeaders';
 import { TOUCHABLE_STATE } from 'react-native-gesture-handler/lib/typescript/components/touchables/GenericTouchable';
 
-// const hostname = '192.168.1.116';
-const hostname = '172.22.90.176';
+const hostname = '192.168.1.116';
+// const hostname = '172.22.90.176';
 const port = 3000;
 const baseURL = `http://${hostname}:${port}`;
 
@@ -112,6 +112,8 @@ export default class newTask extends Component {
         })
         .catch((error) => {
           console.log(error);
+          var errMssg = error.response.data.result;
+          Alert.alert(errMssg);
         });
     }
 
