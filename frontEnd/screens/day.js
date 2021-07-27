@@ -46,12 +46,11 @@ const Day = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    const intervalId = setInterval(() => { 
+    const interval = setInterval(() => {
       getTaskByDate()
-    }, 10)
-  
-    return () => clearInterval(intervalId); //This is important
-  });
+    }, 10);
+    return () => clearInterval(interval);
+  }, []);
 
 
   return (

@@ -108,7 +108,7 @@ export default class newTask extends Component {
               "selectedTimeFrom": ""
             }
           )
-          navigation.goBack();
+          navigation.navigate('Home');
         })
         .catch((error) => {
           console.log(error);
