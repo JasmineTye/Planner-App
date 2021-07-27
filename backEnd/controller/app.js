@@ -17,9 +17,6 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = require("../config.js");
-const isLoggedInMiddleware = require("../auth/isLoggedInMiddleware");
 
 var task = require('../model/task');
 
