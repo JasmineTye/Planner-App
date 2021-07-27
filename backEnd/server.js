@@ -6,20 +6,24 @@ console.log("---------------------------------------");
 // imports
 //----------------------------------------------
 const app = require('./controller/app');
-const publicIp = require('public-ip');
+// const publicIp = require('public-ip');
 
 //----------------------------------------------
 // configurations
 //----------------------------------------------
-(async () => {
-	const hostname = await publicIp.v4();
-	const port = process.env.PORT || 4200;
+// (async () => {
+// 	const hostname = await publicIp.v4();
+	const port = process.env.PORT || 4201;
 
-    //----------------------------------------------
-    // main
-    //----------------------------------------------
-    // start the server and start listening for incoming requests
-    app.listen(port, hostname, () => {
-        console.log(`Server started and accessible via http://${hostname}:${port}/`);
-    });
-})();
+//     //----------------------------------------------
+//     // main
+//     //----------------------------------------------
+//     // start the server and start listening for incoming requests
+//     app.listen(port, hostname, () => {
+//         console.log(`Server started and accessible via http://${hostname}:${port}/`);
+//     });
+// })();
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+  })
