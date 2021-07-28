@@ -28,7 +28,7 @@ export default class selectedTask extends Component {
     super(props);
 
     this.state = {
-      taskID : 0,
+      taskID: 0,
       title: '',
       date: '',
       timeFrom: '',
@@ -230,7 +230,7 @@ export default class selectedTask extends Component {
                 value={this.state.timeFrom}
                 onChangeText={(value) => this.setState({ timeFrom: value })}
               />
-              <Text style={styles.inputStyle}>{this.state.timeFrom}</Text>
+              <Text style={styles.inputStyle}>{moment(this.state.timeFrom, "HH:mm").format('LT')}</Text>
             </TouchableWithoutFeedback>
 
             <Text style={{ fontSize: 20, textTransform: 'uppercase', alignSelf: 'center' }}> To </Text>
@@ -243,19 +243,21 @@ export default class selectedTask extends Component {
                 display="spinner"
                 onConfirm={(date) => {
                   this.setState({
-                    timeTo: moment(date).format('HH:mm')
+                    timeTo: moment(date).format('HH:mm'),
                   });
-                  console.log(this.state.timeTo);
                   hideTimeToPicker();
                 }}
                 onCancel={hideTimeToPicker}
                 value={this.state.timeTo}
                 onChangeText={(value) => this.setState({ timeTo: value })}
               />
-              <Text style={styles.inputStyle}>{this.state.timeTo}</Text>
+
+              <Text style={styles.inputStyle}>{moment(this.state.timeTo, "HH:mm").format('LT')}</Text>
             </TouchableWithoutFeedback>
 
           </View>
+
+
           <View style={{ flexDirection: 'row', marginTop: 30, marginBottom: 10 }}>
             <Text style={{ fontSize: 20, paddingLeft: 15, textTransform: 'uppercase', alignSelf: 'center' }} > Tags: </Text>
             <CustomColorPicker></CustomColorPicker>
