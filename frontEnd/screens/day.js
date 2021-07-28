@@ -10,89 +10,100 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
-import DATA from './data';
 import DayWeekMonthHeader from '../components/dayWeekMonthHeader';
 import AddButton from '../components/addBtn';
 
-// const hostname = '192.168.1.116';
-// // const hostname = '172.22.90.176';
-// const port = process.env.PORT || 4201;
-// const baseURL = `http://${hostname}:${port}`;
-
 const hostname = '192.168.1.116';
-// const hostname = '172.22.90.176';
 const port = 3000;
 const baseURL = `http://${hostname}:${port}`;
-var data = [];
-
 
 const Separator = () => (
   <View style={styles.separator} />
 );
 
-const getTaskByDate = () => {
-  axios.get(`${baseURL}/task/${moment().format('DD-MM-YYYY')}`, {params: {date: moment().format('DD-MM-YYYY')}})
-  .then((response) => {
-    data = response.data;
-    return data;
-  })
-  .catch((error) => {
-    console.log(error);
-  });
-}
+export default class Day extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: []
+    }
+  }
+  
+  componentDidMount() {
+    this.timerID = setInterval(
+      () =>
+        getTaskByDate(),
+      250 // the 2 states are changed every second
+    );
 
+    const getTaskByDate = () => {
+      axios.get(`${baseURL}/task/${moment().format('DD-MM-YYYY')}`, {params: {date: moment().format('DD-MM-YYYY')}})
+      .then((response) => {
+        this.setState({
+          data: response.data
+        })
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+  }
 
-const Day = () => {
-  const navigation = useNavigation();
+  //---runs before the component is removed---
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      getTaskByDate()
-    }, 10);
-    return () => clearInterval(interval);
-  }, []);
-
-
-  return (
-    <View style={{ marginBottom: -10 }}>
-      <ScrollView>
-        <DayWeekMonthHeader navigation={navigation} />
-
-        <View style={styles.container}>
-          <View style={styles.buttons}>
-            <Text style={[styles.buttons, styles.buttonSelected]}>Day</Text>
-
-            <TouchableOpacity onPress={() => navigation.navigate('Week')}>
-              <Text style={styles.buttons}>Week</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Month')}>
-              <Text style={styles.buttons}>Month</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Separator />
-
-          {(data.map((item) => (
-            <TouchableOpacity onPress={ () => {navigation.navigate('SelectedTask', { data: item.taskID });}}>
-            <View style={styles.task} key={item.taskID}>
-              <View style={{ backgroundColor: item.colorTag, flex: 0.15 }}></View>
-              <Text style={styles.taskTime}>{item.timeFrom} - {item.timeTo}</Text>
-              <Text style={styles.taskTitle}>{item.title}</Text>
-              <Text style={styles.taskDetail}>{item.notes}</Text>
+  render() {
+    const { navigation } = this.props;
+    return (
+      <View style={{ marginBottom: -10 }}>
+        <ScrollView>
+          <DayWeekMonthHeader navigation={navigation} />
+    
+          <View style={styles.container}>
+            <View style={styles.buttons}>
+              <Text style={[styles.buttons, styles.buttonSelected]}>Day</Text>
+    
+              <TouchableOpacity onPress={() => navigation.navigate('Week')}>
+                <Text style={styles.buttons}>Week</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate('Month')}>
+                <Text style={styles.buttons}>Month</Text>
+              </TouchableOpacity>
             </View>
-            </TouchableOpacity>
-          ))
-          )
-         }
-
-        </View>
-
-      </ScrollView>
-         <AddButton navigation={navigation}/>
-    </View>
-  );
+    
+            <Separator />
+            {(this.state.data.map((item) => (
+              <TouchableOpacity onPress={ () => {navigation.navigate('SelectedTask', { data: item.taskID });}}>
+                {(item.notes == null || item.notes == "" || item.notes == undefined) ? (
+                  <View style={styles.task} key={item.taskID}>
+                    <View style={{ backgroundColor: item.colorTag, flex: 0.15 }}></View>
+                    <Text style={styles.taskTime}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
+                    <Text style={styles.taskTitleAlt}>{item.title}</Text>
+                  </View>
+                ):(
+                  <View style={styles.task} key={item.taskID}>
+                    <View style={{ backgroundColor: item.colorTag, flex: 0.15 }}></View>
+                    <Text style={styles.taskTime}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
+                    <Text style={styles.taskTitle}>{item.title}</Text>
+                    <Text style={styles.taskDetail}>{item.notes}</Text>
+                </View>
+                )}
+              
+              </TouchableOpacity>
+            ))
+            )
+            }
+    
+          </View>
+    
+        </ScrollView>
+            <AddButton navigation={navigation}/>
+      </View>
+    )
+    }
 };
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#D484E1',
@@ -137,11 +148,17 @@ const styles = StyleSheet.create({
     marginTop: -10,
     alignItems: 'center',
   },
+  taskTitleAlt: {
+    flex: 4,
+    fontSize: 19,
+    paddingVertical: 35,
+    alignItems: 'center',
+  },
   taskDetail: {
     fontSize: 17.5,
     position: 'absolute',
     left: 140,
-    bottom: 18,
+    bottom: 23,
     color: 'gray',
   },
   taskTime: {
@@ -152,5 +169,3 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
 });
-
-export default Day;

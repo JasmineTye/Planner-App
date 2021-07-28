@@ -2,7 +2,8 @@
   Group Members: Jasmine Tye (p2036137), Yuhanaa Binte Izam (p2002145)
 */
 
-import React, { Component } from 'react'
+import React, { Component, useEffect } from 'react'
+import axios from 'axios';
 import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions, Alert, ScrollView } from 'react-native'
 import DropDownPicker from 'react-native-dropdown-picker';
 import moment from 'moment';
@@ -11,7 +12,7 @@ import DATA from './data';
 import AddButton from '../components/addBtn';
 
 //const hostname = '192.168.1.116';
-const hostname = '172.22.89.225'
+const hostname = '192.168.1.116';
 const port = 3000;
 const baseURL = `http://${hostname}:${port}`;
 
@@ -21,19 +22,35 @@ export default class Week extends Component {
     super(props);
 
     this.state = {
-      title: '',
-      date: '',
-      timeFrom: '',
-      timeTo: '',
-      colorTag: '',
-      notes: '',
-      data: 0,
+      date: moment().format("DD-MM-YYYY"),
+      data: [],
       isHidden: true
     }
   }
 
-  myfunction() {
-    Alert.alert('Clicked');
+  componentDidMount() {
+    this.timerID = setInterval(
+      () =>
+        getTaskByDate(),
+      250 // the 2 states are changed every second
+    );
+
+    const getTaskByDate = () => {
+      axios.get(`${baseURL}/task/${this.state.date}`, {params: {date: this.state.date}})
+      .then((response) => {
+        this.setState({
+          data: response.data
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+  }
+  
+  //---runs before the component is removed---
+  componentWillUnmount() {
+    clearInterval(this.timerID);
   }
 
   render() {
@@ -52,27 +69,8 @@ export default class Week extends Component {
       moment().add(6, 'd').format('DD-MM-YYYY')
     ];
 
-    const getSelectedTask = () => {
-      axios.get(`${baseURL}/task/:id`, requestBody)
-        .then((response) => {
-          Alert.alert("Successfully Selected to Database");
-          this.setState(
-            {
-              "title": "",
-              "date": "",
-              "timeFrom": "",
-              "timeTo": "",
-              "colorTag": "",
-              "notes": ""
-            }
-          )
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-
     return (
+      
       <View style={styles.container}>
         <ScrollView>
           <View style={{ backgroundColor: '#D484E1', marginBottom: 15 }}>
@@ -95,13 +93,13 @@ export default class Week extends Component {
 
             <DropDownPicker
               items={[
-                { label: daysInWeek[0] + '\n' + datesInWeek[0], value: 'mon', data: 0 },
-                { label: daysInWeek[1] + '\n' + datesInWeek[1], value: 'tue', data: 1 },
-                { label: daysInWeek[2] + '\n' + datesInWeek[2], value: 'wed', data: 2 },
-                { label: daysInWeek[3] + '\n' + datesInWeek[3], value: 'thu', data: 3 },
-                { label: daysInWeek[4] + '\n' + datesInWeek[4], value: 'fri', data: 4 },
-                { label: daysInWeek[5] + '\n' + datesInWeek[5], value: 'sat', data: 5 },
-                { label: daysInWeek[6] + '\n' + datesInWeek[6], value: 'sun', data: 6 },
+                { label: daysInWeek[0] + '\n' + datesInWeek[0], value: datesInWeek[0]},
+                { label: daysInWeek[1] + '\n' + datesInWeek[1], value: datesInWeek[1]},
+                { label: daysInWeek[2] + '\n' + datesInWeek[2], value: datesInWeek[2]},
+                { label: daysInWeek[3] + '\n' + datesInWeek[2], value: datesInWeek[3]},
+                { label: daysInWeek[4] + '\n' + datesInWeek[4], value: datesInWeek[4]},
+                { label: daysInWeek[5] + '\n' + datesInWeek[5], value: datesInWeek[5]},
+                { label: daysInWeek[6] + '\n' + datesInWeek[6], value: datesInWeek[6]},
               ]}
               placeholder="Select a Day"
               arrowSize={20}
@@ -111,11 +109,13 @@ export default class Week extends Component {
               containerStyle={{ height: 'auto', marginTop: 20 }}
               itemStyle={{ borderBottomWidth: 1, borderBottomColor: '#707070' }}
               dropDownStyle={{ backgroundColor: '#C486ED', paddingHorizontal: -20, minHeight: 450 }}
-              onChangeItem={item => this.setState({
-                day: item.value,
-                data: item.data,
-                isHidden: false
-              })
+              onChangeItem={item => {
+                this.setState({
+                  date: item.value,
+                  isHidden: false
+                });
+                console.log(this.state.date);
+              }
               }
 
               dropDownMaxHeight={Dimensions.get("window").height / 1.5}
@@ -134,50 +134,52 @@ export default class Week extends Component {
                   fontSize: 24,
                 }}>Select a date above!</Text></View>)
                   :
-                  (DATA[this.state.data].map(function (item) {
-                    if (item.key == 0) {
-                      if (item.note == null) {
-                        return <TouchableOpacity onPress={() => navigation.navigate('SelectedTask')}>
-                          <View style={styles.timeTab} key={item.key}>
-                            <Text style={{ flex: 1.5, backgroundColor: item.color, fontSize: 18, padding: 15, paddingHorizontal: 15 }}>{item.start} - {item.end}</Text>
-                            <Text style={styles.taskTitle}>{item.title}</Text>
-                          </View>
-                        </TouchableOpacity>
-                      } else {
-                        return <TouchableOpacity onPress={() => navigation.navigate('SelectedTask')}>
-                          <View style={styles.timeTab} key={item.key}>
-                            <Text style={{ flex: 1.5, backgroundColor: item.color, fontSize: 18, padding: 15, paddingHorizontal: 15 }}>{item.start} - {item.end}</Text>
-                            <View style={{ flex: 4, flexDirection: 'column', backgroundColor: '#eac2f0', marginRight: 20, justifyContent: 'center' }}>
-                              <Text style={styles.taskTitle}>{item.title}</Text>
-                              <Text style={styles.note}>{item.note}</Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      }
-                    } else {
-                      if (item.note == null) {
-                        return <TouchableOpacity onPress={() => navigation.navigate('SelectedTask')}>
-                          <View style={styles.timeTab} key={item.key}>
-                            <Text style={{ flex: 1.5, backgroundColor: item.color, fontSize: 18, padding: 15, paddingHorizontal: 15 }}>{item.start} - {item.end}</Text>
-                            <Text style={styles.taskTitle}>{item.title}</Text>
-                          </View>
-                        </TouchableOpacity>
-                      } else {
-                        return <TouchableOpacity onPress={() => navigation.navigate('SelectedTask')}>
-                          <View style={styles.timeTab} key={item.key}>
-                            <Text style={{ flex: 1.5, backgroundColor: item.color, fontSize: 18, padding: 15, paddingHorizontal: 15 }}>{item.start} - {item.end}</Text>
-                            <View style={{ flex: 4, flexDirection: 'column', backgroundColor: '#eac2f0', justifyContent: 'center', paddingHorizontal: 15 }}>
-                              <Text style={styles.taskTitle}>{item.title}</Text>
-                              <Text style={styles.note}>{item.note}</Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      }
-
-                    }
-
-
-                  }))
+                  (this.state.data.map((item, index) => (
+                    item == this.state.data[0] ? (
+                    <TouchableOpacity 
+                    key = {index} 
+                    style={{ marginTop: -25}} 
+                    onPress={ () => {navigation.navigate('SelectedTask', 
+                    { data: item.taskID });
+                    }}>
+                      {(item.notes == null || item.notes == "" || item.notes == undefined) ? (
+                        <View style={styles.timeTab} key={item.taskID}>
+                          <Text style={{ flex: 1.5, backgroundColor: item.colorTag, fontSize: 18, padding: 15, textAlign: 'center'}}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
+                          <Text style={styles.taskTitleAlt}>{item.title}</Text>
+                        </View>
+                      ):(
+                        <View style={styles.timeTab} key={item.taskID}>
+                          <Text style={{ flex: 1.5, backgroundColor: item.colorTag, fontSize: 18, padding: 15, textAlign: 'center'}}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
+                        <View style={{ flex: 5, flexDirection: 'column', backgroundColor: '#eac2f0', justifyContent: 'center', }}>
+                          <Text style={styles.taskTitle}>{item.title}</Text>
+                          <Text style={styles.note}>{item.notes}</Text>
+                        </View>
+                      </View>
+                      )}
+                    
+                    </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity onPress={ () => {navigation.navigate('SelectedTask', { data: item.taskID });}}>
+                      {(item.notes == null || item.notes == "" || item.notes == undefined) ? (
+                        <View style={styles.timeTab} key={item.taskID}>
+                          <Text style={{ flex: 1.5, backgroundColor: item.colorTag, fontSize: 18, padding: 15, textAlign: 'center'}}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
+                          <Text style={styles.taskTitleAlt}>{item.title}</Text>
+                        </View>
+                      ):(
+                        <View style={styles.timeTab} key={item.taskID}>
+                          <Text style={{ flex: 1.5, backgroundColor: item.colorTag, fontSize: 18, padding: 15, textAlign: 'center'}}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
+                        <View style={{ flex: 5, flexDirection: 'column', backgroundColor: '#eac2f0', justifyContent: 'center', }}>
+                          <Text style={styles.taskTitle}>{item.title}</Text>
+                          <Text style={styles.note}>{item.notes}</Text>
+                        </View>
+                      </View>
+                      )}
+                    
+                    </TouchableOpacity>
+                    )
+                    
+                  ))
+                  )
               }
             </View>
           </View>
@@ -209,6 +211,15 @@ const styles = StyleSheet.create({
     flex: 4,
     backgroundColor: '#eac2f0',
     fontSize: 18,
+    paddingRight: 40,
+    paddingLeft: 20,
+    paddingTop: 15
+  },
+
+  taskTitleAlt: {
+    flex: 4,
+    backgroundColor: '#eac2f0',
+    fontSize: 18,
     textAlignVertical: 'center',
     paddingRight: 40,
     paddingLeft: 20,
@@ -216,10 +227,11 @@ const styles = StyleSheet.create({
   
   note: {
     fontSize: 18, 
-    textAlignVertical: 'center', 
-    color: 'grey', 
-    paddingRight: 40,
-    paddingLeft: 20,
+    textAlignVertical: 'top', 
+    color: 'grey',
+    position: 'absolute',
+    left: 20,
+    bottom: 15,
   },
 
   checkbox: {

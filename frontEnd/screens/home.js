@@ -65,7 +65,7 @@ export default class Home extends Component {
                 date: data[0].date,
                 timeFrom: data[0].timeFrom,
                 timeTo: data[0].timeTo,
-                time: data[0].timeFrom + ' - ' + data[0].timeTo,
+                time: moment(data[0].timeFrom, "HH:mm").format('LT') + ' - ' + moment(data[0].timeTo, "HH:mm").format('LT'),
                 colorTag: data[0].colorTag,
                 notes: data[0].notes
               })
@@ -181,7 +181,7 @@ export default class Home extends Component {
       return (
         <ScrollView>
           <LinearGradient
-            colors={['#35D6ED', '#65DDEF', '#7AE5F5', '#97EBF4', '#C9F6FF', '#48c6ef']}
+            colors={['#97ECFF', '#56EEF8', '#35D5EB', '#2A98E8', '#2C5BB7']}
             style={styles.linearGradient}>
 
             <View style={styles.container}>

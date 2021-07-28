@@ -3,6 +3,7 @@
 */
 
 import React, { useState, Component } from "react";
+import axios from 'axios';
 import moment from 'moment';
 import {
   Text, View, StyleSheet, Image, Dimensions,
@@ -14,6 +15,11 @@ import { useNavigation } from '@react-navigation/native';
 import CheckBox from '../components/checkBox';
 import DATA from './data';
 import AddButton from '../components/addBtn';
+import { getTaskByDate } from "../backEnd/model/task";
+
+const hostname = '192.168.1.116';
+const port = 3000;
+const baseURL = `http://${hostname}:${port}`;
 
 const Separator = () => (
   <View style={styles.separator} />
@@ -30,19 +36,43 @@ export default class Month extends Component {
     super(props);
 
     this.state = {
-      data: 0,
-      selectedDate: moment().format('YYYY-MM-DD'),
-      date: moment().format('YYYY-MM-DD'),
+      data: [],
+      calendarDate: moment().format('YYYY-MM-DD'),
+      formattedDate: moment().format('DD-MM-YYYY'),
       begin: moment().format("YYYY-MM-01"),
       isHidden: false
     }
   }
 
+  componentDidMount() {
+    this.timerID = setInterval(
+      () =>
+        getTaskByDate(),
+      250 // the 2 states are changed every second
+    );
+
+    const getTaskByDate = () => {
+      axios.get(`${baseURL}/task/${this.state.formattedDate}`, {params: {date: this.state.formattedDate}})
+      .then((response) => {
+          this.setState({
+            data: response.data
+          })
+          
+          console.log(this.state.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    }
+  }
+  
+  //---runs before the component is removed---
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
 
   render() {
     const { navigation } = this.props;
-    const daysInWeek = [moment().format('YYYY-MM-DD'), moment().add(1, 'd').format('YYYY-MM-DD'), moment().add(2, 'd').format('YYYY-MM-DD'), moment().add(3, 'd').format('YYYY-MM-DD'), moment().add(4, 'd').format('YYYY-MM-DD'), moment().add(5, 'd').format('YYYY-MM-DD'), moment().add(6, 'd').format('YYYY-MM-DD'),];
-
     return (
       <View style={styles.container}>
         <ScrollView>
@@ -67,11 +97,11 @@ export default class Month extends Component {
             <Separator />
 
             <Calendar
-              current={this.state.date}
+              current={this.state.calendarDate}
               minDate={this.state.begin}
               style={styles.calendar}
               markedDates={{
-                [this.state.selectedDate]: { selected: true, startingDay: true, endingDay: true, color: 'rgba(101, 34, 187, 0.5)' },
+                [this.state.calendarDate]: { selected: true, startingDay: true, endingDay: true, color: 'rgba(101, 34, 187, 0.5)' },
               }}
               markingType={'period'}
               theme={{
@@ -79,29 +109,16 @@ export default class Month extends Component {
 
               }}
               onDayPress={(day) => {
-
+                var dayObj = JSON.stringify(day);
                 console.log("Selected day: " + JSON.stringify(day));
-                for (i = 0; i < DATA.length; i++) {
-                  for (j = 0; j < DATA[i].length; j++) {
-                    var selectedDate = day.dateString;
-                    this.setState({
-                      selectedDate: selectedDate
-                    })
-                    if (selectedDate == daysInWeek[j]) {
-                      var key = j;
-                      this.setState({
-                        data: key,
-                        isHidden: false
-                      })
-                      break;
-                    } else {
-                      this.setState({
-                        isHidden: true
-                      })
-                    }
-                  }
-                  break;
-                }
+                var calendarDate = day.dateString;
+                var formattedDate = moment(day.dateString).format("DD-MM-YYYY");
+                this.setState({
+                  calendarDate: calendarDate,
+                  formattedDate: formattedDate
+                })
+                console.log(this.state.calendarDate);
+                console.log(this.state.formattedDate);
               }}
             />
 
@@ -123,43 +140,35 @@ export default class Month extends Component {
                   fontSize: 18,
                 }}>There are no tasks for this date.</Text></View>
               ) :
-                DATA[this.state.data].map(function (item) {
-                  if (item.note == null) {
-                    return <View key={item.key}>
+                this.state.data.map(function (item, index) {
+                  if (item.notes == null) {
+                    return  <TouchableOpacity key = {index} onPress={ () => {navigation.navigate('SelectedTask', { data: item.taskID });}}>
+                    <View key={item.taskID}>
                       <View style={styles.task} >
-                        <Text style={styles.taskTime}>{item.start} - {item.end}</Text>
+                        <Text style={styles.taskTime}>{item.timeFrom} - {item.timeTo}</Text>
                         <TimeSeparator />
                       </View>
                       <View style={styles.task}>
-                        <View style={{ backgroundColor: item.color, flex: 0.1, marginRight: 20 }}></View>
-                        <CheckBox />
+                        <View style={{ backgroundColor: item.colorTag, flex: 0.1, marginRight: 20 }}></View>
                         <Text style={styles.taskNote}>{item.title}</Text>
-                        <View style={{ justifyContent: 'center', textAlign: 'right' }}>
-                          <Image
-                            style={{ position: 'absolute', right: 20, height: 22, width: 22 }}
-                            source={require('../images/icons8-edit-48.png')} />
-                        </View>
                       </View>
                     </View>
+                    </TouchableOpacity>
                   } else {
-                    return <View key={item.key}>
+                    return  <TouchableOpacity onPress={ () => {navigation.navigate('SelectedTask', { data: item.taskID });}}>
+                    <View key={item.key}>
                       <View style={styles.task}>
-                        <Text style={styles.taskTime}>{item.start} - {item.end}</Text>
+                      <Text style={styles.taskTime}>{moment(item.timeFrom, "HH:mm").format('LT')} - {moment(item.timeTo, "HH:mm").format('LT')}</Text>
                         <TimeSeparator />
                       </View>
                       <View style={styles.task}>
-                        <View style={{ backgroundColor: item.color, flex: 0.1, marginRight: 20 }}></View>
-                        <CheckBox />
+                        <View style={{ backgroundColor: item.colorTag, flex: 0.1, marginRight: 20 }}></View>
                         <Text style={[styles.taskNote, styles.noteWithDet]}>{item.title}</Text>
-                        <Text style={styles.taskDetail}>{item.note}</Text>
-                        <View style={{ justifyContent: 'center', alignSelf: 'center', textAlign: 'right' }}>
-                          <Image
-                            style={{ position: 'absolute', right: 20, height: 22, width: 22 }}
-                            source={require('../images/icons8-edit-48.png')} />
-                        </View>
+                        <Text style={styles.taskDetail}>{item.notes}</Text>
                       </View>
 
                     </View>
+                    </TouchableOpacity>
                   }
                 })
             }
@@ -225,7 +234,7 @@ const styles = StyleSheet.create({
     fontSize: 17.5,
     position: 'absolute',
     bottom: 7.5,
-    left: 106,
+    left: 54,
     color: '#424242',
   },
   taskTime: {
